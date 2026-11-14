@@ -4,8 +4,8 @@ Source of truth for details and acceptance criteria: [`UPGRADE-SPEC.md`](UPGRADE
 Rule: do not start a phase before the acceptance criteria of the previous one are met.
 
 ## P0: Repository foundation
-- [ ] P0-1 Create repo `novabank-v2` (Private first)
-- [ ] P0-2 Import v1 sources (script) and tag `v1-baseline`
+- [x] P0-1 Create repo `novabank-v2` (Private first)
+- [x] P0-2 Import v1 sources (script) and tag `v1-baseline`
 - [x] P0-3 New structure: `libs/`, `services/`, `deploy/`, `docs/`
 - [x] P0-4 Parent POM + modules + `relativePath ../../pom.xml`
 - [x] P0-5 Repo files: `.gitignore`, `.gitattributes`, `.editorconfig`, `CODEOWNERS`, PR template, Dependabot
