@@ -1,0 +1,32 @@
+# ---- Secrets (never commit) ----
+.env
+*.env
+!.env.example
+deploy/secrets/
+
+# ---- Maven ----
+target/
+!.mvn/wrapper/maven-wrapper.jar
+dependency-reduced-pom.xml
+
+# ---- IntelliJ: ignore everything except shared run configurations ----
+.idea/*
+!.idea/runConfigurations/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ---- Other IDEs ----
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+.springBeans
+
+# ---- OS / logs ----
+.DS_Store
+Thumbs.db
+*.log
