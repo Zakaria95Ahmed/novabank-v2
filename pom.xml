@@ -33,7 +33,7 @@
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <jjwt.version>0.13.0</jjwt.version>
         <modelmapper.version>3.2.6</modelmapper.version>
-        <enforcer.version>3.5.0</enforcer.version>
+        <enforcer.version>3.7.0</enforcer.version>
     </properties>
 
     <dependencyManagement>
