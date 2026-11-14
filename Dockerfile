@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -pl services/${SERVICE} -am clean package -DskipTests
 
 # ---------- Stage 2: Runtime ----------
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:24-jre AS runtime
 
 ARG SERVICE
 # Informational only; the real port mapping is done in docker-compose.
