@@ -45,7 +45,7 @@ jobs:
 
       # Validation only (no push). Image publishing arrives in phase P8.
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: false
