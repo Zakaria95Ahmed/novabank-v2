@@ -9,7 +9,7 @@
 # =====================================================================
 
 # ---------- Stage 1: Build ----------
-FROM maven:3.9.12-amazoncorretto-21 AS build
+FROM maven:3.9-amazoncorretto-25 AS build
 
 ARG SERVICE
 WORKDIR /build
