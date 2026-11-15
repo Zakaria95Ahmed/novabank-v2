@@ -1,0 +1,28 @@
+# Development override: publishes the internal ports on YOUR machine only for convenience.
+# Never use this file on a server.
+#
+# Infrastructure for running the services from IntelliJ:
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d postgres kafka
+#
+# Tip (PowerShell, current session only) so you can type plain "docker compose ...":
+#   $env:COMPOSE_FILE = "deploy/docker-compose.yml;deploy/docker-compose.dev.yml"
+# Management (actuator) ports are intentionally never published, even here.
+services:
+  postgres:
+    ports:
+      - "5433:5432"
+  kafka:
+    ports:
+      - "9092:9092"
+  discovery-service:
+    ports:
+      - "8761:8761"
+  user-account-service:
+    ports:
+      - "8081:8081"
+  transaction-service:
+    ports:
+      - "8082:8082"
+  notification-service:
+    ports:
+      - "8083:8083"

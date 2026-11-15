@@ -1,5 +1,7 @@
-# NovaBank v2 (phase P0): same behaviour as v1, new paths.
-# Run from the repo root:  docker compose -f deploy/docker-compose.yml up -d --build
+# NovaBank v2: base compose file.
+# SEC-03: ONLY the API gateway publishes a port to the host. Everything else is reachable
+# only inside the "novabank-net" network. For local development use the dev override:
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d postgres kafka
 # Variables come from deploy/.env (copy deploy/.env.example).
 name: novabank-v2
 
@@ -28,12 +30,12 @@ x-needs-infra: &needs-infra
 
 services:
   # ---------------------------------------------------------------
-  # Infrastructure
+  # Infrastructure (no published ports; see docker-compose.dev.yml)
   # ---------------------------------------------------------------
   postgres:
     image: postgres:17
-    ports:
-      - "5433:5432"   # 5433 on your machine to avoid clashing with other Postgres containers
+    expose:
+      - "5432"
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -50,8 +52,8 @@ services:
 
   kafka:
     image: apache/kafka:latest   # TODO (P8): pin an exact tag
-    ports:
-      - "9092:9092"   # EXTERNAL listener: services running from IntelliJ (localhost:9092)
+    expose:
+      - "19092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -78,8 +80,8 @@ services:
       args:
         SERVICE: discovery-service
         PORT: 8761
-    ports:
-      - "8761:8761"
+    expose:
+      - "8761"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
@@ -97,7 +99,7 @@ services:
         SERVICE: api-gateway
         PORT: 8080
     ports:
-      - "8080:8080"
+      - "8080:8080"   # the ONLY published port
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -111,8 +113,8 @@ services:
       args:
         SERVICE: user-account-service
         PORT: 8081
-    ports:
-      - "8081:8081"
+    expose:
+      - "8081"
     depends_on: *needs-infra
     environment:
       <<: *eureka-kafka-env
@@ -125,8 +127,8 @@ services:
       args:
         SERVICE: transaction-service
         PORT: 8082
-    ports:
-      - "8082:8082"
+    expose:
+      - "8082"
     depends_on: *needs-infra
     environment:
       <<: *eureka-kafka-env
@@ -139,8 +141,8 @@ services:
       args:
         SERVICE: notification-service
         PORT: 8083
-    ports:
-      - "8083:8083"
+    expose:
+      - "8083"
     depends_on: *needs-infra
     environment:
       <<: *eureka-kafka-env
