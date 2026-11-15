@@ -272,11 +272,11 @@ USER appuser
 EXPOSE ${PORT}
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
 HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
-  CMD curl -fsS http://localhost:9090/actuator/health || exit 1
+  CMD curl -fsS http://localhost:$((PORT + 1000))/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-> الـ healthcheck بيضرب منفذ الإدارة `9090` (انظر SEC-02). لو غيّرت المنفذ حدّثه هنا.
+> الـ healthcheck بيضرب منفذ الإدارة = **منفذ الـ Service + 1000** (انظر SEC-02). يتفعّل في P1 بعد ما كل الـ Services تنقل الـ Actuator لمنفذ الإدارة.
 
 **معايير قبول P0:** `mvn -B verify` أخضر محلياً وعلى GitHub، و`docker build --build-arg SERVICE=api-gateway --build-arg PORT=8080 .` ينجح.
 
@@ -300,13 +300,22 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 #### SEC-02: Actuator
 ```properties
-management.server.port=9090
+# management port = server port + 1000 (account: 9081)
+management.server.port=9081
 management.endpoints.web.exposure.include=health,info,prometheus
 management.endpoint.health.probes.enabled=true
 management.endpoint.health.show-details=never
 ```
-- منفذ `9090` **داخلي** (غير منشور في Compose).
-- في كل `SecurityConfig` أضف `SecurityFilterChain` بأولوية عالية يسمح بـ `EndpointRequest.toAnyEndpoint()` ⚠️ (حزمة `EndpointRequest` اتغيّرت في Boot 4، تأكد من الـ import).
+- منفذ الإدارة = **منفذ الـ Service + 1000**، و**داخلي** (غير منشور في Compose حتى في وضع التطوير). كل Service بمنفذ مختلف علشان تشتغل كلها من IntelliJ في نفس الوقت من غير تعارض:
+
+  | Service | منفذ الـ API | منفذ الإدارة |
+  |---|---|---|
+  | api-gateway | 8080 | 9080 |
+  | user-account-service | 8081 | 9081 |
+  | transaction-service | 8082 | 9082 |
+  | notification-service | 8083 | 9083 |
+  | discovery-service | 8761 | 9761 |
+- في كل `SecurityConfig`: **احذف `/actuator/**` من `permitAll`** (كان مفتوحاً للجميع في v1)، وأضف `SecurityFilterChain` بـ `@Order(1)` يطابق الطلبات حسب **المنفذ المحلي** (`request.getLocalPort() == managementPort`) ويسمح بها. المطابقة بالمنفذ مقصودة: ما فيهاش اعتماد على حزم Boot 4 المتغيّرة (`EndpointRequest`).
 - Eureka يسجّل منفذ الإدارة تلقائياً لفحص الصحة ⚠️ (تحقق إن الـ Services تظهر UP في Eureka بعد التغيير).
 
 #### SEC-03: عزل الشبكة
