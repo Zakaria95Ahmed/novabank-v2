@@ -10,6 +10,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -53,9 +54,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
         if (userEmail !=null){
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails;
+            try {
+                userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+            } catch (UsernameNotFoundException e) {
+                // SEC-07: a valid token for a user that no longer exists must not cause a 500.
+                log.warn("JWT subject does not exist anymore; continuing unauthenticated");
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-            if(jwtService.isTokenValid(token, userDetails.getUsername())){
+            // SEC-07: a disabled user must not stay authenticated just because the token is still valid.
+            if(userDetails.isEnabled() && jwtService.isTokenValid(token, userDetails.getUsername())){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -72,14 +82,3 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
